@@ -60,28 +60,37 @@ def generate_quiz_api(data: QuizRequest):
     context = "\n".join(d.page_content for d in docs)
 
     # 5. Generate quiz
-    raw_output = generate_quiz(
-        context,
-        data.difficulty,
-        data.num_questions
-    )
+   # 5. Generate quiz (with retry if less questions)
+    MAX_RETRIES = 3
+    attempt = 0
+    all_questions = []
 
-    try:
-        quiz_json = json.loads(raw_output)
-    except json.JSONDecodeError:
+    while attempt < MAX_RETRIES and len(all_questions) < data.num_questions:
+        raw_output = generate_quiz(
+            context,
+            data.difficulty,
+            data.num_questions - len(all_questions)
+        )
+
+        try:
+            quiz_json = json.loads(raw_output)
+        except json.JSONDecodeError:
+            attempt += 1
+            continue
+
+        if "questions" in quiz_json:
+            all_questions.extend(quiz_json["questions"])
+
+        attempt += 1
+
+    # Final validation
+    if len(all_questions) < data.num_questions:
         return {
             "success": False,
-            "error": "Invalid JSON from LLM",
-            "raw_output": raw_output[:1000]
-        }
-
-    if "questions" not in quiz_json or len(quiz_json["questions"]) == 0:
-        return {
-            "success": False,
-            "error": "No questions generated"
+            "error": f"Only generated {len(all_questions)} questions after {MAX_RETRIES} retries"
         }
 
     return {
         "success": True,
-        "questions": quiz_json["questions"]
+        "questions": all_questions[:data.num_questions]
     }

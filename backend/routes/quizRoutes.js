@@ -51,7 +51,7 @@ router.post("/generate", upload.single("pdf"), async (req, res) => {
         end_page: endPage ? Number(endPage) : null
       }
     );
-
+    console.log(aiResponse.data.questions);
     res.json({
       success: true,
       quiz: aiResponse.data.questions

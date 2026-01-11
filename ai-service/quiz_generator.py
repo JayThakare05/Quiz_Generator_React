@@ -5,10 +5,10 @@ def generate_quiz(context, difficulty, num_questions):
     llm = OllamaLLM(model="llama3")
 
     prompt = f"""
-You are an API that returns ONLY valid JSON.
-Do NOT include explanations, markdown, or extra text.
+You are an educational assessment API.
+You must return ONLY valid JSON. No extra text.
 
-Return JSON in this EXACT structure:
+STRICT JSON FORMAT (do not change keys):
 
 {{
   "questions": [
@@ -20,21 +20,25 @@ Return JSON in this EXACT structure:
         "C": "string",
         "D": "string"
       }},
-      "correct": "A"
+      "correct": "A",
+      "explanation": "Short explanation (2–4 lines max)"
     }}
   ]
 }}
 
 Rules:
-- Return EXACTLY {num_questions} questions
+- Generate EXACTLY and Strictly {num_questions} questions
 - Difficulty: {difficulty}
-- Correct must be one of A/B/C/D
-- Use ONLY the content below
+- Explanation must explain WHY the correct option is correct
+- Explanation length: max 2–4 lines
+- Do NOT include author names, publication dates, preface info, acknowledgements
+- Do NOT include metadata-based questions
+- Questions must test CONCEPTS, DEFINITIONS, or UNDERSTANDING
+- Use ONLY the academic content below
 - Output must be VALID JSON
 
-CONTENT:
+ACADEMIC CONTENT:
 {context}
 """
 
-    response = llm.invoke(prompt)
-    return response
+    return llm.invoke(prompt)

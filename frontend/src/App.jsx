@@ -151,21 +151,32 @@ export default function App() {
 
       {/* QUIZ */}
       {questions.length > 0 && (
-        <div className="max-w-4xl mt-12 space-y-6">
+      <div className="max-w-4xl mt-12 space-y-6">
 
-          {questions.map((q, idx) => (
-            <div
-              key={idx}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
-            >
-              <h3 className="font-semibold text-lg mb-4">
-                Q{idx + 1}. {q.question}
-              </h3>
+        {questions.map((q, idx) => (
+          <div
+            key={idx}
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
+          >
+            <h3 className="font-semibold text-lg mb-4">
+              Q{idx + 1}. {q.question}
+            </h3>
 
-              {Object.entries(q.options).map(([key, val]) => (
+            {Object.entries(q.options).map(([key, val]) => {
+              let optionClass = "bg-white/10 hover:bg-white/20";
+
+              if (submitted) {
+                if (key === q.correct) {
+                  optionClass = "bg-green-600/30 border border-green-500";
+                } else if (answers[idx] === key) {
+                  optionClass = "bg-red-600/30 border border-red-500";
+                }
+              }
+
+              return (
                 <label
                   key={key}
-                  className="block mb-2 cursor-pointer bg-white/10 p-3 rounded-xl hover:bg-white/20 transition"
+                  className={`block mb-2 cursor-pointer p-3 rounded-xl transition ${optionClass}`}
                 >
                   <input
                     type="radio"
@@ -178,32 +189,45 @@ export default function App() {
                   />
                   {key}) {val}
                 </label>
-              ))}
+              );
+            })}
 
-              {submitted && (
+
+            {/* ✅ SHOW ANSWER + EXPLANATION ONLY AFTER SUBMIT */}
+            {submitted && (
+              <>
                 <p className="mt-3 text-green-400">
                   ✅ Correct Answer: {q.correct}
                 </p>
-              )}
-            </div>
-          ))}
 
-          {!submitted && (
-            <button
-              onClick={submitQuiz}
-              className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 transition"
-            >
-              Submit Quiz
-            </button>
-          )}
+                {answers[idx] !== q.correct && q.explanation && (
+                  <p className="mt-2 text-yellow-400">
+                    💡 Explanation: {q.explanation}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        ))}
 
-          {submitted && (
-            <h2 className="text-3xl font-bold mt-6">
-              🏆 Score: {score} / {questions.length}
-            </h2>
-          )}
-        </div>
-      )}
+        {!submitted && (
+          <button
+            onClick={submitQuiz}
+            className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 transition"
+          >
+            Submit Quiz
+          </button>
+        )}
+
+        {submitted && (
+          <h2 className="text-3xl font-bold mt-6">
+            🏆 Score: {score} / {questions.length}
+          </h2>
+        )}
+
+      </div>
+    )}
+
     </div>
   );
 }
